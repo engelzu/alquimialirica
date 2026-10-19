@@ -778,6 +778,194 @@
             margin-top: 16px;
         }
 
+        /* TELA DE LOGIN ESCURA */
+        #login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle at 50% 30%, #1e1014 0%, #0d0e12 60%, #060709 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: rgba(18, 20, 26, 0.95);
+            border: 1px solid rgba(220, 38, 38, 0.3);
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.9), 0 0 35px rgba(220, 38, 38, 0.2);
+            border-radius: 24px;
+            width: 100%;
+            max-width: 420px;
+            padding: 38px 28px;
+            text-align: center;
+            backdrop-filter: blur(16px);
+            animation: fadeInLogin 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeInLogin {
+            from { opacity: 0; transform: translateY(20px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .login-logo {
+            width: 190px;
+            height: 190px;
+            object-fit: contain;
+            margin: 0 auto 16px;
+            display: block;
+            filter: drop-shadow(0 0 20px rgba(185, 28, 28, 0.5));
+            animation: logoPulse 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes logoPulse {
+            0% { filter: drop-shadow(0 0 14px rgba(185, 28, 28, 0.4)); transform: scale(1); }
+            100% { filter: drop-shadow(0 0 26px rgba(220, 38, 38, 0.7)); transform: scale(1.025); }
+        }
+
+        .login-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.55rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .login-subtitle {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .login-input-group {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .login-input {
+            width: 100%;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 13px 44px 13px 16px;
+            font-size: 1.1rem;
+            color: #ffffff;
+            letter-spacing: 2px;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .login-input:focus {
+            outline: none;
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25);
+            background: #11141a;
+        }
+
+        .btn-toggle-pass {
+            position: absolute;
+            right: 12px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s ease;
+        }
+
+        .btn-toggle-pass:hover {
+            color: var(--text-primary);
+        }
+
+        .btn-login-submit {
+            background: linear-gradient(135deg, #b91c1c 0%, #dc2626 50%, #991b1b 100%);
+            border: 1px solid #ef4444;
+            color: #ffffff;
+            font-size: 0.98rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 14px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.35);
+        }
+
+        .btn-login-submit:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 22px rgba(220, 38, 38, 0.55);
+            background: linear-gradient(135deg, #dc2626 0%, #ef4444 50%, #b91c1c 100%);
+        }
+
+        .login-error {
+            color: #f87171;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: none;
+            margin-top: 2px;
+        }
+
+        .login-error.show {
+            display: block;
+            animation: shake 0.35s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+
+        /* LOGO E BOTÃO SAIR NO CABEÇALHO */
+        .brand-logo-img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 10px rgba(185, 28, 28, 0.6));
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 2px;
+            border: 1px solid rgba(220, 38, 38, 0.35);
+            flex-shrink: 0;
+        }
+
+        .btn-logout {
+            background: rgba(248, 81, 73, 0.08);
+            border: 1px solid rgba(248, 81, 73, 0.3);
+            color: #f85149;
+            padding: 8px 14px;
+            border-radius: var(--radius-md);
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-logout:hover {
+            background: rgba(248, 81, 73, 0.2);
+            color: #ff7b72;
+            border-color: #f85149;
+        }
+
         /* RESPONSIVIDADE PARA CELULAR E TELAS MENORES */
         @media (max-width: 820px) {
             body {
@@ -1092,12 +1280,41 @@
 
 <body>
 
-    <div class="container">
+    <!-- TELA DE LOGIN ESCURA -->
+    <div id="login-screen">
+        <div class="login-card">
+            <img src="logo.png" alt="Alquimia Lírica" class="login-logo">
+            <h2 class="login-title">ALQUIMIA LÍRICA</h2>
+            <p class="login-subtitle">Acesso restrito para os músicos da banda</p>
+
+            <form class="login-form" onsubmit="realizarLogin(event)">
+                <div class="login-input-group">
+                    <input type="password" 
+                           id="senha-input" 
+                           class="login-input" 
+                           placeholder="Digite a senha..." 
+                           autocomplete="current-password"
+                           autofocus>
+                    <button type="button" class="btn-toggle-pass" onclick="toggleSenhaVisivel()" title="Mostrar ou ocultar senha">
+                        <svg id="eye-icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                </div>
+                <div id="login-msg-erro" class="login-error">
+                    Senha incorreta! Tente novamente.
+                </div>
+                <button type="submit" class="btn-login-submit">
+                    Entrar no Repertório
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="container" id="app-container">
         <!-- CABEÇALHO -->
         <header>
             <div class="header-top">
                 <div class="brand-title">
-                    <div class="brand-icon">⚡</div>
+                    <img src="logo.png" alt="Logo Alquimia Lírica" class="brand-logo-img">
                     <div>
                         <h1>Repertório da Banda ALQUIMIA LIRICA</h1>
                         <p class="subtitle">Adicione as músicas e marque o seu instrumento. Quando os 5 concordarem, a
@@ -1115,6 +1332,10 @@
                             <path d="M12 5v14M5 12h14" />
                         </svg>
                         Adicionar Música
+                    </button>
+                    <button class="btn-logout" onclick="encerrarSessao()" title="Sair e bloquear">
+                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                        Sair
                     </button>
                 </div>
             </div>
@@ -1331,6 +1552,83 @@
     </svg>
 
     <script>
+        // --- AUTENTICAÇÃO / LOGIN ---
+        const SENHA_CORRETA = "789512";
+        const AUTH_STORAGE_KEY = "alquimia_auth_session";
+
+        function verificarAutenticacao() {
+            const estaAutenticado = localStorage.getItem(AUTH_STORAGE_KEY) === 'true';
+            const loginScreen = document.getElementById("login-screen");
+            if (estaAutenticado) {
+                if (loginScreen) loginScreen.style.display = 'none';
+            } else {
+                if (loginScreen) {
+                    loginScreen.style.display = 'flex';
+                    loginScreen.style.opacity = '1';
+                }
+                setTimeout(() => {
+                    const passInput = document.getElementById("senha-input");
+                    if (passInput) passInput.focus();
+                }, 100);
+            }
+        }
+
+        function realizarLogin(e) {
+            if (e) e.preventDefault();
+            const passInput = document.getElementById("senha-input");
+            const msgErro = document.getElementById("login-msg-erro");
+            const senhaDigitada = passInput ? passInput.value.trim() : '';
+
+            if (senhaDigitada === SENHA_CORRETA) {
+                localStorage.setItem(AUTH_STORAGE_KEY, 'true');
+                const loginScreen = document.getElementById("login-screen");
+                if (loginScreen) {
+                    loginScreen.style.opacity = '0';
+                    loginScreen.style.transition = 'opacity 0.3s ease';
+                    setTimeout(() => {
+                        loginScreen.style.display = 'none';
+                    }, 300);
+                }
+                if (msgErro) msgErro.classList.remove("show");
+            } else {
+                if (msgErro) {
+                    msgErro.classList.remove("show");
+                    void msgErro.offsetWidth;
+                    msgErro.classList.add("show");
+                }
+                if (passInput) {
+                    passInput.select();
+                    passInput.focus();
+                }
+            }
+        }
+
+        function encerrarSessao() {
+            if (confirm("Deseja sair e bloquear o acesso ao repertório?")) {
+                localStorage.removeItem(AUTH_STORAGE_KEY);
+                const loginScreen = document.getElementById("login-screen");
+                if (loginScreen) {
+                    loginScreen.style.opacity = '1';
+                    loginScreen.style.display = 'flex';
+                    const passInput = document.getElementById("senha-input");
+                    if (passInput) {
+                        passInput.value = '';
+                        passInput.focus();
+                    }
+                }
+            }
+        }
+
+        function toggleSenhaVisivel() {
+            const passInput = document.getElementById("senha-input");
+            if (!passInput) return;
+            if (passInput.type === "password") {
+                passInput.type = "text";
+            } else {
+                passInput.type = "password";
+            }
+        }
+
         const SUPABASE_URL = 'https://jbsomfcexhowijfrhjqr.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_0n1oR6nyzkVYzAhJ3-9SnA_7lEtRm9z';
         const STORAGE_KEY = 'musicos_repertorio_oficial';
@@ -1987,7 +2285,8 @@
                 .replace(/'/g, "&#039;");
         }
 
-        // Iniciar conexão com Supabase
+        // Iniciar autenticação e conexão com Supabase
+        verificarAutenticacao();
         conectarSupabase();
     </script>
 </body>
