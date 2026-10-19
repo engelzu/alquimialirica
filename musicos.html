@@ -11,6 +11,8 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap"
         rel="stylesheet">
+    <!-- Supabase Client CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         :root {
@@ -115,6 +117,43 @@
             color: var(--text-secondary);
             font-size: 0.92rem;
             margin-top: 4px;
+        }
+
+        .connection-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.74rem;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: rgba(22, 27, 34, 0.9);
+            border: 1px solid var(--border-color);
+            margin-top: 6px;
+            color: var(--text-secondary);
+            width: fit-content;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #d29922;
+            display: inline-block;
+        }
+
+        .connection-badge.connected .status-dot {
+            background: #3fb950;
+            box-shadow: 0 0 8px rgba(63, 185, 80, 0.8);
+        }
+
+        .connection-badge.connected {
+            border-color: rgba(63, 185, 80, 0.4);
+            color: #7ee787;
+        }
+
+        .connection-badge.error .status-dot {
+            background: #f85149;
         }
 
         /* STATS BAR */
@@ -1063,6 +1102,10 @@
                         <h1>Repertório da Banda ALQUIMIA LIRICA</h1>
                         <p class="subtitle">Adicione as músicas e marque o seu instrumento. Quando os 5 concordarem, a
                             música ganha OK!</p>
+                        <div id="status-conexao" class="connection-badge">
+                            <span class="status-dot"></span>
+                            <span class="status-text">Conectando ao Supabase...</span>
+                        </div>
                     </div>
                 </div>
                 <div class="actions-right">
@@ -1288,37 +1331,37 @@
     </svg>
 
     <script>
+        const SUPABASE_URL = 'https://jbsomfcexhowijfrhjqr.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_0n1oR6nyzkVYzAhJ3-9SnA_7lEtRm9z';
         const STORAGE_KEY = 'musicos_repertorio_oficial';
         const tbody = document.getElementById("lista-linhas");
+        const statusConexao = document.getElementById("status-conexao");
         let filtroAtual = 'todos';
+        let dados = carregarDadosLocal() || [];
+        let supabaseClient = null;
+        let debounceTimers = {};
 
-        // Estrutura inicial: 12 linhas em branco caso não haja dados no LocalStorage
-        let dados = carregarDados();
-
-        if (!dados || dados.length === 0) {
-            dados = [];
-            for (let i = 0; i < 10; i++) {
-                dados.push({
-                    id: 'row_' + Date.now() + '_' + i,
-                    musica: '',
-                    banda: '',
-                    youtube: '',
-                    bateria: false,
-                    baixo: false,
-                    vocal: false,
-                    guitar1: false,
-                    guitar2: false
-                });
-            }
-            salvarDados();
+        function setConnectionStatus(status, text) {
+            if (!statusConexao) return;
+            statusConexao.className = 'connection-badge ' + status;
+            const textElem = statusConexao.querySelector('.status-text');
+            if (textElem) textElem.textContent = text;
         }
 
-        function carregarDados() {
+        // Inicializar cliente Supabase
+        if (window.supabase) {
+            try {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            } catch (e) {
+                console.error("Erro ao inicializar Supabase:", e);
+            }
+        }
+
+        function carregarDadosLocal() {
             try {
                 const item = localStorage.getItem(STORAGE_KEY);
                 if (!item) return null;
                 const parsed = JSON.parse(item);
-                // Garantir que registros existentes tenham as propriedades banda e youtube
                 return parsed.map(p => ({
                     banda: '',
                     youtube: '',
@@ -1329,12 +1372,170 @@
             }
         }
 
-        function salvarDados() {
+        function salvarLocal() {
             try {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(dados));
             } catch (e) {
                 console.error("Erro ao salvar no LocalStorage", e);
             }
+        }
+
+        // Se local estiver vazio e ainda sem dados, preenche modelo
+        if (dados.length === 0) {
+            for (let i = 0; i < 10; i++) {
+                dados.push({
+                    id: 'temp_' + Date.now() + '_' + i,
+                    musica: '',
+                    banda: '',
+                    youtube: '',
+                    bateria: false,
+                    baixo: false,
+                    vocal: false,
+                    guitar1: false,
+                    guitar2: false
+                });
+            }
+        }
+
+        renderizarTabela();
+
+        // Conectar ao Supabase e carregar dados remotos
+        async function conectarSupabase() {
+            if (!supabaseClient) {
+                setConnectionStatus('error', 'Supabase Offline (Modo Local)');
+                return;
+            }
+
+            setConnectionStatus('', 'Conectando ao Supabase...');
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('musicas')
+                    .select('*')
+                    .order('created_at', { ascending: true });
+
+                if (error) {
+                    console.warn("Aviso Supabase:", error);
+                    setConnectionStatus('error', 'Erro ao sincronizar (Usando dados locais)');
+                    return;
+                }
+
+                if (data && data.length > 0) {
+                    dados = data.map(d => ({
+                        id: d.id,
+                        musica: d.musica || '',
+                        banda: d.banda || '',
+                        youtube: d.youtube || '',
+                        bateria: !!d.bateria,
+                        baixo: !!d.baixo,
+                        vocal: !!d.vocal,
+                        guitar1: !!d.guitar1,
+                        guitar2: !!d.guitar2
+                    }));
+                    salvarLocal();
+                    renderizarTabela();
+                } else {
+                    // Tabela vazia: cria 10 linhas iniciais no banco
+                    const iniciais = [];
+                    for (let i = 0; i < 10; i++) {
+                        iniciais.push({
+                            musica: '',
+                            banda: '',
+                            youtube: '',
+                            bateria: false,
+                            baixo: false,
+                            vocal: false,
+                            guitar1: false,
+                            guitar2: false
+                        });
+                    }
+                    const { data: criados } = await supabaseClient.from('musicas').insert(iniciais).select();
+                    if (criados && criados.length > 0) {
+                        dados = criados;
+                        salvarLocal();
+                        renderizarTabela();
+                    }
+                }
+
+                setConnectionStatus('connected', 'Sincronizado em Tempo Real');
+                escutarMudancasRealtime();
+            } catch (err) {
+                console.error("Falha na conexão Supabase:", err);
+                setConnectionStatus('error', 'Modo Offline (Salvo no Navegador)');
+            }
+        }
+
+        // Ouvir alterações em tempo real dos outros músicos
+        function escutarMudancasRealtime() {
+            if (!supabaseClient) return;
+
+            supabaseClient
+                .channel('musicas_live_channel')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'musicas' }, payload => {
+                    const { eventType, new: novo, old: antigo } = payload;
+
+                    if (eventType === 'INSERT') {
+                        if (!dados.some(d => d.id === novo.id)) {
+                            dados.push(novo);
+                            salvarLocal();
+                            renderizarTabela();
+                        }
+                    } else if (eventType === 'UPDATE') {
+                        const idx = dados.findIndex(d => d.id === novo.id);
+                        if (idx !== -1) {
+                            // Não substituir campo onde o usuário atual pode estar digitando
+                            const ativo = document.activeElement;
+                            const digitandoNessaLinha = ativo && ativo.closest(`tr`) && ativo.getAttribute('data-id') === novo.id;
+                            
+                            dados[idx] = { ...dados[idx], ...novo };
+                            salvarLocal();
+                            
+                            if (!digitandoNessaLinha) {
+                                renderizarTabela();
+                            } else {
+                                atualizarApenasInstrumentosEStatus(novo);
+                            }
+                        }
+                    } else if (eventType === 'DELETE') {
+                        dados = dados.filter(d => d.id !== antigo.id);
+                        salvarLocal();
+                        renderizarTabela();
+                    }
+                })
+                .subscribe(status => {
+                    if (status === 'SUBSCRIBED') {
+                        setConnectionStatus('connected', 'Sincronizado em Tempo Real');
+                    }
+                });
+        }
+
+        function atualizarApenasInstrumentosEStatus(item) {
+            const tr = document.querySelector(`tr[data-row-id="${item.id}"]`);
+            if (!tr) return;
+
+            const insts = ['bateria', 'baixo', 'vocal', 'guitar1', 'guitar2'];
+            insts.forEach(inst => {
+                const btn = tr.querySelector(`.toggle-btn.${inst}`);
+                if (btn) {
+                    if (item[inst]) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                }
+            });
+
+            const aceites = (item.bateria ? 1 : 0) + (item.baixo ? 1 : 0) + (item.vocal ? 1 : 0) + (item.guitar1 ? 1 : 0) + (item.guitar2 ? 1 : 0);
+            const statusCol = tr.querySelector('.col-status');
+            if (statusCol) {
+                statusCol.innerHTML = gerarBadgeStatus(aceites, item.musica && item.musica.trim().length > 0);
+            }
+            if (aceites === 5) {
+                tr.classList.add('approved-row');
+            } else {
+                tr.classList.remove('approved-row');
+            }
+            atualizarEstatisticas();
         }
 
         function renderizarTabela() {
@@ -1350,7 +1551,7 @@
                     (item.guitar2 ? 1 : 0);
 
                 const isAprovado = aceites === 5;
-                const temTexto = item.musica.trim().length > 0;
+                const temTexto = item.musica && item.musica.trim().length > 0;
 
                 // Aplicar filtro
                 if (filtroAtual === 'aprovadas' && !isAprovado) return;
@@ -1359,6 +1560,7 @@
                 visiveis++;
 
                 const tr = document.createElement("tr");
+                tr.setAttribute('data-row-id', item.id);
                 if (isAprovado) {
                     tr.classList.add("approved-row");
                 }
@@ -1368,146 +1570,149 @@
 
                 if (temYoutube) {
                     youtubeBtnHtml = `
-                <a href="${escapeHtml(item.youtube.trim())}" 
-                   target="_blank" 
-                   rel="noopener noreferrer" 
-                   class="btn-youtube-play active" 
-                   title="Abrir vídeo no YouTube">
-                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-                </a>
-            `;
+                        <a href="${escapeHtml(item.youtube.trim())}" 
+                           target="_blank" 
+                           rel="noopener noreferrer" 
+                           class="btn-youtube-play active" 
+                           title="Abrir vídeo no YouTube">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                        </a>
+                    `;
                 } else if (item.musica && item.musica.trim()) {
                     const buscaQuery = encodeURIComponent(item.musica.trim() + (item.banda && item.banda.trim() ? ' ' + item.banda.trim() : ''));
                     youtubeBtnHtml = `
-                <a href="https://www.youtube.com/results?search_query=${buscaQuery}" 
-                   target="_blank" 
-                   rel="noopener noreferrer" 
-                   class="btn-youtube-play search" 
-                   title="Buscar esta música no YouTube">
-                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-                </a>
-            `;
+                        <a href="https://www.youtube.com/results?search_query=${buscaQuery}" 
+                           target="_blank" 
+                           rel="noopener noreferrer" 
+                           class="btn-youtube-play search" 
+                           title="Buscar esta música no YouTube">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                        </a>
+                    `;
                 } else {
                     youtubeBtnHtml = `
-                <span class="btn-youtube-play disabled" title="Digite a música ou cole o link">
-                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-                </span>
-            `;
+                        <span class="btn-youtube-play disabled" title="Digite a música ou cole o link">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                        </span>
+                    `;
                 }
 
                 tr.innerHTML = `
-            <td class="col-index">${index + 1}</td>
-            
-            <!-- NOME DA MÚSICA -->
-            <td class="col-music">
-                <div class="music-input-wrap">
-                    <input type="text"
-                           class="music-input" 
-                           placeholder="Digite o nome da música..."
-                           value="${escapeHtml(item.musica)}"
-                           oninput="atualizarNomeMusica('${item.id}', this.value)">
-                </div>
-            </td>
+                    <td class="col-index">${index + 1}</td>
+                    
+                    <!-- NOME DA MÚSICA -->
+                    <td class="col-music">
+                        <div class="music-input-wrap">
+                            <input type="text"
+                                   data-id="${item.id}"
+                                   class="music-input" 
+                                   placeholder="Digite o nome da música..."
+                                   value="${escapeHtml(item.musica || '')}"
+                                   oninput="atualizarNomeMusica('${item.id}', this.value)">
+                        </div>
+                    </td>
 
-            <!-- NOME DA BANDA -->
-            <td class="col-band">
-                <div class="music-input-wrap">
-                    <input type="text"
-                           class="music-input" 
-                           placeholder="Nome da banda..."
-                           value="${escapeHtml(item.banda || '')}"
-                           oninput="atualizarNomeBanda('${item.id}', this.value)">
-                </div>
-            </td>
+                    <!-- NOME DA BANDA -->
+                    <td class="col-band">
+                        <div class="music-input-wrap">
+                            <input type="text"
+                                   data-id="${item.id}"
+                                   class="music-input" 
+                                   placeholder="Nome da banda..."
+                                   value="${escapeHtml(item.banda || '')}"
+                                   oninput="atualizarNomeBanda('${item.id}', this.value)">
+                        </div>
+                    </td>
 
-            <!-- LINK YOUTUBE -->
-            <td class="col-youtube">
-                <div class="youtube-wrap">
-                    <input type="url"
-                           class="music-input youtube-input" 
-                           placeholder="Link do YouTube..."
-                           value="${escapeHtml(item.youtube || '')}"
-                           oninput="atualizarLinkYoutube('${item.id}', this.value)"
-                           onblur="renderizarTabela()">
-                    ${youtubeBtnHtml}
-                </div>
-            </td>
-            
-            <!-- BATERIA -->
-            <td class="check-cell cell-drums">
-                <button type="button" 
-                        class="toggle-btn drums ${item.bateria ? 'active' : ''}" 
-                        onclick="toggleInstrumento('${item.id}', 'bateria')"
-                        title="Bateria: ${item.bateria ? 'Aceito' : 'Marcar Aceite'}">
-                    <span class="check-dot"></span>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-drums"/></svg>
-                    <span class="mobile-inst-tag">BATERIA</span>
-                </button>
-            </td>
+                    <!-- LINK YOUTUBE -->
+                    <td class="col-youtube">
+                        <div class="youtube-wrap">
+                            <input type="url"
+                                   data-id="${item.id}"
+                                   class="music-input youtube-input" 
+                                   placeholder="Link do YouTube..."
+                                   value="${escapeHtml(item.youtube || '')}"
+                                   oninput="atualizarLinkYoutube('${item.id}', this.value)"
+                                   onblur="renderizarTabela()">
+                            ${youtubeBtnHtml}
+                        </div>
+                    </td>
+                    
+                    <!-- BATERIA -->
+                    <td class="check-cell cell-drums">
+                        <button type="button" 
+                                class="toggle-btn drums ${item.bateria ? 'active' : ''}" 
+                                onclick="toggleInstrumento('${item.id}', 'bateria')"
+                                title="Bateria: ${item.bateria ? 'Aceito' : 'Marcar Aceite'}">
+                            <span class="check-dot"></span>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-drums"/></svg>
+                            <span class="mobile-inst-tag">BATERIA</span>
+                        </button>
+                    </td>
 
-            <!-- BAIXO -->
-            <td class="check-cell cell-bass">
-                <button type="button" 
-                        class="toggle-btn bass ${item.baixo ? 'active' : ''}" 
-                        onclick="toggleInstrumento('${item.id}', 'baixo')"
-                        title="Baixo: ${item.baixo ? 'Aceito' : 'Marcar Aceite'}">
-                    <span class="check-dot"></span>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-bass"/></svg>
-                    <span class="mobile-inst-tag">BAIXO</span>
-                </button>
-            </td>
+                    <!-- BAIXO -->
+                    <td class="check-cell cell-bass">
+                        <button type="button" 
+                                class="toggle-btn bass ${item.baixo ? 'active' : ''}" 
+                                onclick="toggleInstrumento('${item.id}', 'baixo')"
+                                title="Baixo: ${item.baixo ? 'Aceito' : 'Marcar Aceite'}">
+                            <span class="check-dot"></span>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-bass"/></svg>
+                            <span class="mobile-inst-tag">BAIXO</span>
+                        </button>
+                    </td>
 
-            <!-- VOCAL -->
-            <td class="check-cell cell-vocal">
-                <button type="button" 
-                        class="toggle-btn vocal ${item.vocal ? 'active' : ''}" 
-                        onclick="toggleInstrumento('${item.id}', 'vocal')"
-                        title="Vocal: ${item.vocal ? 'Aceito' : 'Marcar Aceite'}">
-                    <span class="check-dot"></span>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-vocal"/></svg>
-                    <span class="mobile-inst-tag">VOCAL</span>
-                </button>
-            </td>
+                    <!-- VOCAL -->
+                    <td class="check-cell cell-vocal">
+                        <button type="button" 
+                                class="toggle-btn vocal ${item.vocal ? 'active' : ''}" 
+                                onclick="toggleInstrumento('${item.id}', 'vocal')"
+                                title="Vocal: ${item.vocal ? 'Aceito' : 'Marcar Aceite'}">
+                            <span class="check-dot"></span>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-vocal"/></svg>
+                            <span class="mobile-inst-tag">VOCAL</span>
+                        </button>
+                    </td>
 
-            <!-- GUITARRA 1 -->
-            <td class="check-cell cell-guitar1">
-                <button type="button" 
-                        class="toggle-btn guitar1 ${item.guitar1 ? 'active' : ''}" 
-                        onclick="toggleInstrumento('${item.id}', 'guitar1')"
-                        title="Guitarra 1: ${item.guitar1 ? 'Aceito' : 'Marcar Aceite'}">
-                    <span class="check-dot"></span>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-guitar"/></svg>
-                    <span class="mobile-inst-tag">GUIT 1</span>
-                </button>
-            </td>
+                    <!-- GUITARRA 1 -->
+                    <td class="check-cell cell-guitar1">
+                        <button type="button" 
+                                class="toggle-btn guitar1 ${item.guitar1 ? 'active' : ''}" 
+                                onclick="toggleInstrumento('${item.id}', 'guitar1')"
+                                title="Guitarra 1: ${item.guitar1 ? 'Aceito' : 'Marcar Aceite'}">
+                            <span class="check-dot"></span>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-guitar"/></svg>
+                            <span class="mobile-inst-tag">GUIT 1</span>
+                        </button>
+                    </td>
 
-            <!-- GUITARRA 2 -->
-            <td class="check-cell cell-guitar2">
-                <button type="button" 
-                        class="toggle-btn guitar2 ${item.guitar2 ? 'active' : ''}" 
-                        onclick="toggleInstrumento('${item.id}', 'guitar2')"
-                        title="Guitarra 2: ${item.guitar2 ? 'Aceito' : 'Marcar Aceite'}">
-                    <span class="check-dot"></span>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-guitar"/></svg>
-                    <span class="mobile-inst-tag">GUIT 2</span>
-                </button>
-            </td>
+                    <!-- GUITARRA 2 -->
+                    <td class="check-cell cell-guitar2">
+                        <button type="button" 
+                                class="toggle-btn guitar2 ${item.guitar2 ? 'active' : ''}" 
+                                onclick="toggleInstrumento('${item.id}', 'guitar2')"
+                                title="Guitarra 2: ${item.guitar2 ? 'Aceito' : 'Marcar Aceite'}">
+                            <span class="check-dot"></span>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-guitar"/></svg>
+                            <span class="mobile-inst-tag">GUIT 2</span>
+                        </button>
+                    </td>
 
-            <!-- STATUS / OK (5/5) -->
-            <td class="col-status">
-                ${gerarBadgeStatus(aceites, temTexto)}
-            </td>
+                    <!-- STATUS / OK (5/5) -->
+                    <td class="col-status">
+                        ${gerarBadgeStatus(aceites, temTexto)}
+                    </td>
 
-            <!-- AÇÕES -->
-            <td class="col-actions">
-                <button type="button" 
-                        class="btn-row-delete" 
-                        onclick="removerLinha('${item.id}')" 
-                        title="Remover esta música">
-                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
-            </td>
-        `;
+                    <!-- AÇÕES -->
+                    <td class="col-actions">
+                        <button type="button" 
+                                class="btn-row-delete" 
+                                onclick="removerLinha('${item.id}')" 
+                                title="Remover esta música">
+                            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </td>
+                `;
 
                 tbody.appendChild(tr);
             });
@@ -1515,10 +1720,10 @@
             if (visiveis === 0) {
                 const trEmpty = document.createElement("tr");
                 trEmpty.innerHTML = `
-            <td colspan="11" class="empty-state">
-                Nenhuma música encontrada com o filtro selecionado.
-            </td>
-        `;
+                    <td colspan="11" class="empty-state">
+                        Nenhuma música encontrada com o filtro selecionado.
+                    </td>
+                `;
                 tbody.appendChild(trEmpty);
             }
 
@@ -1542,18 +1747,26 @@
             const item = dados.find(d => d.id === id);
             if (item) {
                 item.musica = texto;
-                salvarDados();
+                salvarLocal();
                 atualizarEstatisticas();
 
-                // Atualiza estilo da linha se mudou
+                // Atualizar status visual na linha
                 const aceites = (item.bateria ? 1 : 0) + (item.baixo ? 1 : 0) + (item.vocal ? 1 : 0) + (item.guitar1 ? 1 : 0) + (item.guitar2 ? 1 : 0);
-                const tr = document.querySelector(`input[oninput*="${id}"]`)?.closest('tr');
+                const tr = document.querySelector(`tr[data-row-id="${id}"]`);
                 if (tr) {
                     const statusCol = tr.querySelector('.col-status');
                     if (statusCol) {
-                        statusCol.innerHTML = gerarBadgeStatus(aceites, item.musica.trim().length > 0);
+                        statusCol.innerHTML = gerarBadgeStatus(aceites, item.musica && item.musica.trim().length > 0);
                     }
                 }
+
+                // Debounce para gravar no Supabase
+                clearTimeout(debounceTimers['musica_' + id]);
+                debounceTimers['musica_' + id] = setTimeout(async () => {
+                    if (supabaseClient && !id.startsWith('temp_')) {
+                        await supabaseClient.from('musicas').update({ musica: texto }).eq('id', id);
+                    }
+                }, 500);
             }
         }
 
@@ -1561,7 +1774,14 @@
             const item = dados.find(d => d.id === id);
             if (item) {
                 item.banda = texto;
-                salvarDados();
+                salvarLocal();
+
+                clearTimeout(debounceTimers['banda_' + id]);
+                debounceTimers['banda_' + id] = setTimeout(async () => {
+                    if (supabaseClient && !id.startsWith('temp_')) {
+                        await supabaseClient.from('musicas').update({ banda: texto }).eq('id', id);
+                    }
+                }, 500);
             }
         }
 
@@ -1569,22 +1789,34 @@
             const item = dados.find(d => d.id === id);
             if (item) {
                 item.youtube = link;
-                salvarDados();
+                salvarLocal();
+
+                clearTimeout(debounceTimers['yt_' + id]);
+                debounceTimers['yt_' + id] = setTimeout(async () => {
+                    if (supabaseClient && !id.startsWith('temp_')) {
+                        await supabaseClient.from('musicas').update({ youtube: link }).eq('id', id);
+                    }
+                }, 500);
             }
         }
 
-        function toggleInstrumento(id, instrumento) {
+        async function toggleInstrumento(id, instrumento) {
             const item = dados.find(d => d.id === id);
             if (item) {
                 item[instrumento] = !item[instrumento];
-                salvarDados();
+                salvarLocal();
                 renderizarTabela();
+
+                if (supabaseClient && !id.startsWith('temp_')) {
+                    const updatePayload = {};
+                    updatePayload[instrumento] = item[instrumento];
+                    await supabaseClient.from('musicas').update(updatePayload).eq('id', id);
+                }
             }
         }
 
-        function adicionarLinha(focarNoInput = false) {
-            const novoItem = {
-                id: 'row_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        async function adicionarLinha(focarNoInput = false) {
+            const novoObj = {
                 musica: '',
                 banda: '',
                 youtube: '',
@@ -1594,15 +1826,28 @@
                 guitar1: false,
                 guitar2: false
             };
-            dados.push(novoItem);
-            salvarDados();
+
+            if (supabaseClient) {
+                const { data, error } = await supabaseClient.from('musicas').insert([novoObj]).select();
+                if (data && data[0]) {
+                    dados.push(data[0]);
+                } else {
+                    novoObj.id = 'temp_' + Date.now();
+                    dados.push(novoObj);
+                }
+            } else {
+                novoObj.id = 'temp_' + Date.now();
+                dados.push(novoObj);
+            }
+
+            salvarLocal();
             renderizarTabela();
 
             if (focarNoInput) {
                 setTimeout(() => {
                     const inputs = tbody.querySelectorAll('.music-input');
                     if (inputs.length > 0) {
-                        const ultimo = inputs[inputs.length - 3]; // Foca no input de música
+                        const ultimo = inputs[inputs.length - 3];
                         if (ultimo) {
                             ultimo.focus();
                             ultimo.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1612,22 +1857,27 @@
             }
         }
 
-        function removerLinha(id) {
+        async function removerLinha(id) {
             const item = dados.find(d => d.id === id);
-            if (item && item.musica.trim()) {
+            if (item && item.musica && item.musica.trim()) {
                 if (!confirm(`Deseja remover a música "${item.musica}"?`)) return;
             }
+
+            if (supabaseClient && !id.startsWith('temp_')) {
+                await supabaseClient.from('musicas').delete().eq('id', id);
+            }
+
             dados = dados.filter(d => d.id !== id);
             if (dados.length === 0) {
                 adicionarLinha();
             } else {
-                salvarDados();
+                salvarLocal();
                 renderizarTabela();
             }
         }
 
         function atualizarEstatisticas() {
-            const totalComNome = dados.filter(d => d.musica.trim().length > 0).length;
+            const totalComNome = dados.filter(d => d.musica && d.musica.trim().length > 0).length;
             const aprovadas = dados.filter(d =>
                 (d.bateria ? 1 : 0) + (d.baixo ? 1 : 0) + (d.vocal ? 1 : 0) + (d.guitar1 ? 1 : 0) + (d.guitar2 ? 1 : 0) === 5
             ).length;
@@ -1647,12 +1897,18 @@
             renderizarTabela();
         }
 
-        function limparTudo() {
-            if (!confirm("Tem certeza que deseja limpar todas as músicas e votos?")) return;
+        async function limparTudo() {
+            if (!confirm("Tem certeza que deseja limpar todas as músicas e votos de todos os músicos?")) return;
+
+            if (supabaseClient) {
+                // Remove todos os registros
+                await supabaseClient.from('musicas').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+            }
+
             dados = [];
             for (let i = 0; i < 10; i++) {
                 dados.push({
-                    id: 'row_' + Date.now() + '_' + i,
+                    id: 'temp_' + Date.now() + '_' + i,
                     musica: '',
                     banda: '',
                     youtube: '',
@@ -1663,14 +1919,32 @@
                     guitar2: false
                 });
             }
-            salvarDados();
+            salvarLocal();
             renderizarTabela();
+
+            if (supabaseClient) {
+                const { data } = await supabaseClient.from('musicas').insert(dados.map(d => ({
+                    musica: '',
+                    banda: '',
+                    youtube: '',
+                    bateria: false,
+                    baixo: false,
+                    vocal: false,
+                    guitar1: false,
+                    guitar2: false
+                }))).select();
+                if (data) {
+                    dados = data;
+                    salvarLocal();
+                    renderizarTabela();
+                }
+            }
         }
 
         function exportarRepertorio() {
             const aprovadas = dados.filter(d =>
                 (d.bateria ? 1 : 0) + (d.baixo ? 1 : 0) + (d.vocal ? 1 : 0) + (d.guitar1 ? 1 : 0) + (d.guitar2 ? 1 : 0) === 5 &&
-                d.musica.trim().length > 0
+                d.musica && d.musica.trim().length > 0
             );
 
             const textarea = document.getElementById("texto-exportado");
@@ -1705,7 +1979,7 @@
 
         function escapeHtml(text) {
             if (!text) return '';
-            return text
+            return String(text)
                 .replace(/&/g, "&amp;")
                 .replace(/</g, "&lt;")
                 .replace(/>/g, "&gt;")
@@ -1713,8 +1987,8 @@
                 .replace(/'/g, "&#039;");
         }
 
-        // Inicializar primeira renderização
-        renderizarTabela();
+        // Iniciar conexão com Supabase
+        conectarSupabase();
     </script>
 </body>
 
