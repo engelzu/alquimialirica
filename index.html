@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Repertório da Banda - Votação dos Músicos</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-body: #0d1117;
+            --bg-card: #161b22;
+            --bg-card-hover: #1c2128;
+            --bg-input: #0d1117;
+            --border-color: #30363d;
+            --border-focus: #58a6ff;
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+
+            --drum-color: #f59e0b;
+            --drum-bg: rgba(245, 158, 11, 0.12);
+            --bass-color: #8b5cf6;
+            --bass-bg: rgba(139, 92, 246, 0.12);
+            --vocal-color: #ec4899;
+            --vocal-bg: rgba(236, 72, 153, 0.12);
+            --guitar1-color: #3b82f6;
+            --guitar1-bg: rgba(59, 130, 246, 0.12);
+            --guitar2-color: #06b6d4;
+            --guitar2-bg: rgba(6, 182, 212, 0.12);
+
+            --success: #238636;
+            --success-glow: rgba(35, 134, 54, 0.35);
+            --success-border: #2ea043;
+            --pending: #d29922;
+            --pending-bg: rgba(210, 153, 34, 0.15);
+
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: radial-gradient(circle at 50% -20%, #1e293b 0%, #0d1117 70%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 24px 16px;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        /* HEADER */
+        header {
+            background: linear-gradient(180deg, rgba(22, 27, 34, 0.9) 0%, rgba(22, 27, 34, 0.7) 100%);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 24px 28px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .brand-title {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #f59e0b, #ec4899, #3b82f6);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);
+        }
+
+        h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.75rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: #ffffff;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.92rem;
+            margin-top: 4px;
+        }
+
+        /* STATS BAR */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .stat-card {
+            background: rgba(13, 17, 23, 0.7);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .stat-value.approved {
+            color: #3fb950;
+            text-shadow: 0 0 12px rgba(63, 185, 80, 0.4);
+        }
+
+        /* ACTIONS TOOLBAR */
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .filter-group {
+            display: flex;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 4px;
+            gap: 4px;
+        }
+
+        .filter-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 6px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .filter-btn.active {
+            background: #21262d;
+            color: #58a6ff;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .actions-right {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 16px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid transparent;
+        }
+
+        .btn-primary {
+            background: #238636;
+            color: #ffffff;
+            border-color: #2ea043;
+        }
+
+        .btn-primary:hover {
+            background: #2ea043;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(46, 160, 67, 0.3);
+        }
+
+        .btn-secondary {
+            background: #21262d;
+            color: var(--text-primary);
+            border-color: var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: #30363d;
+            border-color: #8b949e;
+        }
+
+        .btn-danger {
+            background: rgba(248, 81, 73, 0.1);
+            color: #f85149;
+            border-color: rgba(248, 81, 73, 0.4);
+        }
+
+        .btn-danger:hover {
+            background: rgba(248, 81, 73, 0.2);
+        }
+
+        /* TABLE CONTAINER */
+        .table-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            width: 100%;
+        }
+
+        table {
+            width: 100%;
+            min-width: 1220px;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        thead th {
+            background: #11151c;
+            color: var(--text-secondary);
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            padding: 16px 14px;
+            border-bottom: 2px solid var(--border-color);
+            user-select: none;
+        }
+
+        .th-center {
+            text-align: center;
+        }
+
+        .th-instrument {
+            width: 110px;
+        }
+
+        .inst-badge {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            text-align: center;
+            padding: 4px 6px;
+            border-radius: var(--radius-sm);
+        }
+
+        .inst-icon {
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .inst-icon svg {
+            width: 20px;
+            height: 20px;
+            stroke-width: 2;
+        }
+
+        .inst-title {
+            font-size: 0.72rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        /* Cores dos cabeçalhos dos instrumentos */
+        .inst-drums {
+            color: var(--drum-color);
+        }
+
+        .inst-bass {
+            color: var(--bass-color);
+        }
+
+        .inst-vocal {
+            color: var(--vocal-color);
+        }
+
+        .inst-guitar1 {
+            color: var(--guitar1-color);
+        }
+
+        .inst-guitar2 {
+            color: var(--guitar2-color);
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--border-color);
+            transition: background 0.15s ease;
+        }
+
+        tbody tr:hover {
+            background: var(--bg-card-hover);
+        }
+
+        tbody tr.approved-row {
+            background: linear-gradient(90deg, rgba(35, 134, 54, 0.1) 0%, rgba(35, 134, 54, 0.03) 100%);
+            border-left: 3px solid #3fb950;
+        }
+
+        td {
+            padding: 10px 12px;
+            vertical-align: middle;
+        }
+
+        .col-index {
+            width: 44px;
+            text-align: center;
+            color: var(--text-muted);
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .col-music {
+            min-width: 230px;
+        }
+
+        .col-band {
+            min-width: 190px;
+        }
+
+        .col-youtube {
+            min-width: 200px;
+        }
+
+        .youtube-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .youtube-input {
+            font-size: 0.85rem;
+            padding: 8px 10px;
+        }
+
+        .btn-youtube-play {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            background: #21262d;
+            border: 1px solid var(--border-color);
+            color: #8b949e;
+            text-decoration: none;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        .btn-youtube-play svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .btn-youtube-play.active {
+            color: #ff0000;
+            background: rgba(255, 0, 0, 0.12);
+            border-color: rgba(255, 0, 0, 0.4);
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.25);
+        }
+
+        .btn-youtube-play.active:hover {
+            transform: scale(1.1);
+            background: rgba(255, 0, 0, 0.22);
+            box-shadow: 0 0 16px rgba(255, 0, 0, 0.45);
+        }
+
+        .btn-youtube-play.search {
+            color: #f87171;
+            background: rgba(248, 113, 113, 0.08);
+            border-color: rgba(248, 113, 113, 0.25);
+        }
+
+        .btn-youtube-play.search:hover {
+            transform: scale(1.08);
+            color: #ff0000;
+            background: rgba(255, 0, 0, 0.15);
+        }
+
+        .btn-youtube-play.disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        .music-input-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .music-input {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 9px 12px;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .music-input::placeholder {
+            color: #484f58;
+            font-size: 0.85rem;
+        }
+
+        .music-input:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.18);
+            background: #13171e;
+        }
+
+        .approved-row .music-input {
+            color: #7ee787;
+            font-weight: 600;
+        }
+
+        /* CHECKBOX / TOGGLE ESTILIZADO PARA MÚSICOS */
+        .check-cell {
+            text-align: center;
+            width: 110px;
+        }
+
+        .toggle-btn {
+            background: rgba(22, 27, 34, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            width: 44px;
+            height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            color: #484f58;
+            position: relative;
+            user-select: none;
+        }
+
+        .toggle-btn:hover {
+            transform: scale(1.08);
+            border-color: #8b949e;
+            color: var(--text-secondary);
+        }
+
+        .toggle-btn svg {
+            width: 22px;
+            height: 22px;
+            transition: all 0.2s ease;
+        }
+
+        /* Estados ativos para cada instrumento */
+        .toggle-btn.active.drums {
+            background: var(--drum-bg);
+            border-color: var(--drum-color);
+            color: var(--drum-color);
+            box-shadow: 0 0 12px rgba(245, 158, 11, 0.35);
+        }
+
+        .toggle-btn.active.bass {
+            background: var(--bass-bg);
+            border-color: var(--bass-color);
+            color: var(--bass-color);
+            box-shadow: 0 0 12px rgba(139, 92, 246, 0.35);
+        }
+
+        .toggle-btn.active.vocal {
+            background: var(--vocal-bg);
+            border-color: var(--vocal-color);
+            color: var(--vocal-color);
+            box-shadow: 0 0 12px rgba(236, 72, 153, 0.35);
+        }
+
+        .toggle-btn.active.guitar1 {
+            background: var(--guitar1-bg);
+            border-color: var(--guitar1-color);
+            color: var(--guitar1-color);
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.35);
+        }
+
+        .toggle-btn.active.guitar2 {
+            background: var(--guitar2-bg);
+            border-color: var(--guitar2-color);
+            color: var(--guitar2-color);
+            box-shadow: 0 0 12px rgba(6, 182, 212, 0.35);
+        }
+
+        .toggle-btn .check-dot {
+            position: absolute;
+            top: -3px;
+            right: -3px;
+            width: 14px;
+            height: 14px;
+            background: #238636;
+            border: 2px solid var(--bg-card);
+            border-radius: 50%;
+            display: none;
+        }
+
+        .toggle-btn.active .check-dot {
+            display: block;
+        }
+
+        /* STATUS BADGE NO FINAL DA LINHA */
+        .col-status {
+            width: 140px;
+            text-align: center;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        /* PENDENTE */
+        .status-badge.pending {
+            background: rgba(210, 153, 34, 0.12);
+            color: #e3b341;
+            border: 1px solid rgba(210, 153, 34, 0.3);
+        }
+
+        /* VAZIO / SEM VOTOS */
+        .status-badge.empty {
+            background: rgba(110, 118, 129, 0.1);
+            color: var(--text-muted);
+            border: 1px solid rgba(110, 118, 129, 0.2);
+        }
+
+        /* 5 MÚSICOS ACEITARAM: OK! */
+        .status-badge.approved {
+            background: linear-gradient(135deg, #238636, #2ea043);
+            color: #ffffff;
+            border: 1px solid #3fb950;
+            box-shadow: 0 0 16px rgba(46, 160, 67, 0.6);
+            transform: scale(1.04);
+            animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+
+            50% {
+                transform: scale(1.15);
+            }
+
+            100% {
+                transform: scale(1.04);
+                opacity: 1;
+            }
+        }
+
+        .col-actions {
+            width: 50px;
+            text-align: center;
+        }
+
+        .btn-row-delete {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .btn-row-delete:hover {
+            color: #f85149;
+            background: rgba(248, 81, 73, 0.12);
+        }
+
+        /* EMPTY STATE */
+        .empty-state {
+            padding: 48px 24px;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        /* FOOTER / MODAL */
+        footer {
+            margin-top: 24px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.82rem;
+        }
+
+        /* MODAL EXPORT */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 16px;
+        }
+
+        .modal-backdrop.show {
+            display: flex;
+        }
+
+        .modal-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 550px;
+            padding: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .modal-header h3 {
+            font-size: 1.25rem;
+            color: #fff;
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.4rem;
+            cursor: pointer;
+        }
+
+        .modal-body textarea {
+            width: 100%;
+            height: 200px;
+            background: #0d1117;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            padding: 12px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            resize: vertical;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        /* RESPONSIVIDADE */
+        @media (max-width: 768px) {
+            header {
+                padding: 18px 16px;
+            }
+
+            .header-top {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-group {
+                justify-content: space-between;
+            }
+
+            .actions-right {
+                justify-content: flex-start;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <!-- CABEÇALHO -->
+        <header>
+            <div class="header-top">
+                <div class="brand-title">
+                    <div class="brand-icon">⚡</div>
+                    <div>
+                        <h1>Repertório da Banda ALQUIMIA LIRICA</h1>
+                        <p class="subtitle">Adicione as músicas e marque o seu instrumento. Quando os 5 concordarem, a
+                            música ganha OK!</p>
+                    </div>
+                </div>
+                <div class="actions-right">
+                    <button class="btn btn-primary" onclick="adicionarLinha(true)">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path d="M12 5v14M5 12h14" />
+                        </svg>
+                        Adicionar Música
+                    </button>
+                </div>
+            </div>
+
+            <!-- PLACAR DE ESTATÍSTICAS -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-label">Total Cadastradas</span>
+                    <span class="stat-value" id="stat-total">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Aprovadas (OK 5/5)</span>
+                    <span class="stat-value approved" id="stat-approved">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Em Votação</span>
+                    <span class="stat-value" id="stat-pending">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Adesão Total</span>
+                    <span class="stat-value" id="stat-percent">0%</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- BARRA DE FERRAMENTAS -->
+        <div class="toolbar">
+            <div class="filter-group">
+                <button class="filter-btn active" onclick="setFiltro('todos', this)">Todas as Músicas</button>
+                <button class="filter-btn" onclick="setFiltro('aprovadas', this)">Aprovadas (5/5)</button>
+                <button class="filter-btn" onclick="setFiltro('pendentes', this)">Pendentes</button>
+            </div>
+
+            <div class="actions-right">
+                <button class="btn btn-secondary" onclick="exportarRepertorio()"
+                    title="Ver lista formatada para ensaio">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path
+                            d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                    </svg>
+                    Copiar Repertório OK
+                </button>
+                <button class="btn btn-danger" onclick="limparTudo()" title="Limpar todas as linhas e votos">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Limpar Tudo
+                </button>
+            </div>
+        </div>
+
+        <!-- TABELA PRINCIPAL -->
+        <main class="table-card">
+            <div class="table-wrap">
+                <table id="tabela-musicas">
+                    <thead>
+                        <tr>
+                            <th class="th-center">#</th>
+                            <th>Nome da Música</th>
+                            <th>Nome da Banda</th>
+                            <th class="th-center" style="width: 210px;">
+                                <div class="inst-badge" style="color: #ff0000;">
+                                    <span class="inst-icon">
+                                        <svg viewBox="0 0 24 24" fill="currentColor">
+                                            <path
+                                                d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                                        </svg>
+                                    </span>
+                                    <span class="inst-title" style="color: #ff5252;">YOUTUBE</span>
+                                </div>
+                            </th>
+
+                            <!-- 1. BATERIA -->
+                            <th class="th-center th-instrument inst-drums">
+                                <div class="inst-badge">
+                                    <span class="inst-icon">
+                                        <!-- Ícone Bateria / Drums -->
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <ellipse cx="12" cy="7" rx="8" ry="3" />
+                                            <path d="M4 7v10c0 1.66 3.58 3 8 3s8-1.34 8-3V7" />
+                                            <path d="M7 10l5 4 5-4" />
+                                            <path d="M5 2l5 5M19 2l-5 5" />
+                                        </svg>
+                                    </span>
+                                    <span class="inst-title">BATERIA</span>
+                                </div>
+                            </th>
+
+                            <!-- 2. BAIXO -->
+                            <th class="th-center th-instrument inst-bass">
+                                <div class="inst-badge">
+                                    <span class="inst-icon">
+                                        <!-- Ícone Baixo / Bass -->
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <circle cx="12" cy="14" r="6" />
+                                            <path d="M12 8V2M9 4h6M10 2h4" />
+                                            <circle cx="12" cy="14" r="2" fill="currentColor" />
+                                        </svg>
+                                    </span>
+                                    <span class="inst-title">BAIXO</span>
+                                </div>
+                            </th>
+
+                            <!-- 3. VOCAL -->
+                            <th class="th-center th-instrument inst-vocal">
+                                <div class="inst-badge">
+                                    <span class="inst-icon">
+                                        <!-- Ícone Vocal / Microfone -->
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <rect x="9" y="2" width="6" height="11" rx="3" />
+                                            <path d="M5 10a7 7 0 0014 0M12 17v5M8 22h8" />
+                                        </svg>
+                                    </span>
+                                    <span class="inst-title">VOCAL</span>
+                                </div>
+                            </th>
+
+                            <!-- 4. GUITARRA 1 -->
+                            <th class="th-center th-instrument inst-guitar1">
+                                <div class="inst-badge">
+                                    <span class="inst-icon">
+                                        <!-- Ícone Guitarra 1 -->
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <path d="M6 19c-1.5-1.5-1.5-4 0-5.5l7-7 4 4-7 7c-1.5 1.5-4 1.5-5.5 0z" />
+                                            <path d="M13 6.5l5.5-5.5 2 2-5.5 5.5" />
+                                            <circle cx="9" cy="15" r="1" fill="currentColor" />
+                                        </svg>
+                                    </span>
+                                    <span class="inst-title">GUITAR 1</span>
+                                </div>
+                            </th>
+
+                            <!-- 5. GUITARRA 2 -->
+                            <th class="th-center th-instrument inst-guitar2">
+                                <div class="inst-badge">
+                                    <span class="inst-icon">
+                                        <!-- Ícone Guitarra 2 -->
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <path d="M6 19c-1.5-1.5-1.5-4 0-5.5l7-7 4 4-7 7c-1.5 1.5-4 1.5-5.5 0z" />
+                                            <path d="M13 6.5l5.5-5.5 2 2-5.5 5.5" />
+                                            <circle cx="9" cy="15" r="1" fill="currentColor" />
+                                        </svg>
+                                    </span>
+                                    <span class="inst-title">GUITAR 2</span>
+                                </div>
+                            </th>
+
+                            <th class="th-center" style="width: 140px;">Status</th>
+                            <th class="th-center" style="width: 44px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-linhas">
+                        <!-- Linhas geradas dinamicamente vazias para os músicos preencherem -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+
+        <footer>
+            <p>Basta digitar o nome da música e clicar no ícone do seu instrumento para confirmar. Com 5 aceites na
+                mesma linha, o OK é imediato!</p>
+        </footer>
+    </div>
+
+    <!-- MODAL EXPORTAÇÃO -->
+    <div class="modal-backdrop" id="modal-export">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>🎵 Repertório Aprovado (OK 5/5)</h3>
+                <button class="modal-close" onclick="fecharModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="color: var(--text-secondary); margin-bottom: 10px; font-size: 0.9rem;">
+                    Músicas aprovadas por unanimidade por todos os 5 músicos:
+                </p>
+                <textarea id="texto-exportado" readonly></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="fecharModal()">Fechar</button>
+                <button class="btn btn-primary" onclick="copiarTextoExport()">Copiar para Área de Transferência</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ÍCONES SVG TEMPLATES -->
+    <svg style="display: none;">
+        <defs>
+            <!-- Bateria Icon Def -->
+            <g id="icon-drums">
+                <ellipse cx="12" cy="7" rx="8" ry="3" />
+                <path d="M4 7v10c0 1.66 3.58 3 8 3s8-1.34 8-3V7" />
+                <path d="M7 10l5 4 5-4" />
+                <path d="M5 2l5 5M19 2l-5 5" />
+            </g>
+            <!-- Baixo Icon Def -->
+            <g id="icon-bass">
+                <circle cx="12" cy="14" r="6" />
+                <path d="M12 8V2M9 4h6M10 2h4" />
+                <circle cx="12" cy="14" r="2" fill="currentColor" />
+            </g>
+            <!-- Vocal Icon Def -->
+            <g id="icon-vocal">
+                <rect x="9" y="2" width="6" height="11" rx="3" />
+                <path d="M5 10a7 7 0 0014 0M12 17v5M8 22h8" />
+            </g>
+            <!-- Guitar Icon Def -->
+            <g id="icon-guitar">
+                <path d="M6 19c-1.5-1.5-1.5-4 0-5.5l7-7 4 4-7 7c-1.5 1.5-4 1.5-5.5 0z" />
+                <path d="M13 6.5l5.5-5.5 2 2-5.5 5.5" />
+                <circle cx="9" cy="15" r="1" fill="currentColor" />
+            </g>
+        </defs>
+    </svg>
+
+    <script>
+        const STORAGE_KEY = 'musicos_repertorio_oficial';
+        const tbody = document.getElementById("lista-linhas");
+        let filtroAtual = 'todos';
+
+        // Estrutura inicial: 12 linhas em branco caso não haja dados no LocalStorage
+        let dados = carregarDados();
+
+        if (!dados || dados.length === 0) {
+            dados = [];
+            for (let i = 0; i < 10; i++) {
+                dados.push({
+                    id: 'row_' + Date.now() + '_' + i,
+                    musica: '',
+                    banda: '',
+                    youtube: '',
+                    bateria: false,
+                    baixo: false,
+                    vocal: false,
+                    guitar1: false,
+                    guitar2: false
+                });
+            }
+            salvarDados();
+        }
+
+        function carregarDados() {
+            try {
+                const item = localStorage.getItem(STORAGE_KEY);
+                if (!item) return null;
+                const parsed = JSON.parse(item);
+                // Garantir que registros existentes tenham as propriedades banda e youtube
+                return parsed.map(p => ({
+                    banda: '',
+                    youtube: '',
+                    ...p
+                }));
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function salvarDados() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(dados));
+            } catch (e) {
+                console.error("Erro ao salvar no LocalStorage", e);
+            }
+        }
+
+        function renderizarTabela() {
+            tbody.innerHTML = '';
+
+            let visiveis = 0;
+
+            dados.forEach((item, index) => {
+                const aceites = (item.bateria ? 1 : 0) +
+                    (item.baixo ? 1 : 0) +
+                    (item.vocal ? 1 : 0) +
+                    (item.guitar1 ? 1 : 0) +
+                    (item.guitar2 ? 1 : 0);
+
+                const isAprovado = aceites === 5;
+                const temTexto = item.musica.trim().length > 0;
+
+                // Aplicar filtro
+                if (filtroAtual === 'aprovadas' && !isAprovado) return;
+                if (filtroAtual === 'pendentes' && (isAprovado || !temTexto)) return;
+
+                visiveis++;
+
+                const tr = document.createElement("tr");
+                if (isAprovado) {
+                    tr.classList.add("approved-row");
+                }
+
+                const temYoutube = item.youtube && item.youtube.trim().length > 0;
+                let youtubeBtnHtml = '';
+
+                if (temYoutube) {
+                    youtubeBtnHtml = `
+                <a href="${escapeHtml(item.youtube.trim())}" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   class="btn-youtube-play active" 
+                   title="Abrir vídeo no YouTube">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                </a>
+            `;
+                } else if (item.musica && item.musica.trim()) {
+                    const buscaQuery = encodeURIComponent(item.musica.trim() + (item.banda && item.banda.trim() ? ' ' + item.banda.trim() : ''));
+                    youtubeBtnHtml = `
+                <a href="https://www.youtube.com/results?search_query=${buscaQuery}" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   class="btn-youtube-play search" 
+                   title="Buscar esta música no YouTube">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                </a>
+            `;
+                } else {
+                    youtubeBtnHtml = `
+                <span class="btn-youtube-play disabled" title="Digite a música ou cole o link">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                </span>
+            `;
+                }
+
+                tr.innerHTML = `
+            <td class="col-index">${index + 1}</td>
+            
+            <!-- NOME DA MÚSICA -->
+            <td class="col-music">
+                <div class="music-input-wrap">
+                    <input type="text"
+                           class="music-input" 
+                           placeholder="Digite o nome da música..."
+                           value="${escapeHtml(item.musica)}"
+                           oninput="atualizarNomeMusica('${item.id}', this.value)">
+                </div>
+            </td>
+
+            <!-- NOME DA BANDA -->
+            <td class="col-band">
+                <div class="music-input-wrap">
+                    <input type="text"
+                           class="music-input" 
+                           placeholder="Nome da banda..."
+                           value="${escapeHtml(item.banda || '')}"
+                           oninput="atualizarNomeBanda('${item.id}', this.value)">
+                </div>
+            </td>
+
+            <!-- LINK YOUTUBE -->
+            <td class="col-youtube">
+                <div class="youtube-wrap">
+                    <input type="url"
+                           class="music-input youtube-input" 
+                           placeholder="Link do YouTube..."
+                           value="${escapeHtml(item.youtube || '')}"
+                           oninput="atualizarLinkYoutube('${item.id}', this.value)"
+                           onblur="renderizarTabela()">
+                    ${youtubeBtnHtml}
+                </div>
+            </td>
+            
+            <!-- BATERIA -->
+            <td class="check-cell">
+                <button type="button" 
+                        class="toggle-btn drums ${item.bateria ? 'active' : ''}" 
+                        onclick="toggleInstrumento('${item.id}', 'bateria')"
+                        title="Bateria: ${item.bateria ? 'Aceito' : 'Marcar Aceite'}">
+                    <span class="check-dot"></span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-drums"/></svg>
+                </button>
+            </td>
+
+            <!-- BAIXO -->
+            <td class="check-cell">
+                <button type="button" 
+                        class="toggle-btn bass ${item.baixo ? 'active' : ''}" 
+                        onclick="toggleInstrumento('${item.id}', 'baixo')"
+                        title="Baixo: ${item.baixo ? 'Aceito' : 'Marcar Aceite'}">
+                    <span class="check-dot"></span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-bass"/></svg>
+                </button>
+            </td>
+
+            <!-- VOCAL -->
+            <td class="check-cell">
+                <button type="button" 
+                        class="toggle-btn vocal ${item.vocal ? 'active' : ''}" 
+                        onclick="toggleInstrumento('${item.id}', 'vocal')"
+                        title="Vocal: ${item.vocal ? 'Aceito' : 'Marcar Aceite'}">
+                    <span class="check-dot"></span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-vocal"/></svg>
+                </button>
+            </td>
+
+            <!-- GUITARRA 1 -->
+            <td class="check-cell">
+                <button type="button" 
+                        class="toggle-btn guitar1 ${item.guitar1 ? 'active' : ''}" 
+                        onclick="toggleInstrumento('${item.id}', 'guitar1')"
+                        title="Guitarra 1: ${item.guitar1 ? 'Aceito' : 'Marcar Aceite'}">
+                    <span class="check-dot"></span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-guitar"/></svg>
+                </button>
+            </td>
+
+            <!-- GUITARRA 2 -->
+            <td class="check-cell">
+                <button type="button" 
+                        class="toggle-btn guitar2 ${item.guitar2 ? 'active' : ''}" 
+                        onclick="toggleInstrumento('${item.id}', 'guitar2')"
+                        title="Guitarra 2: ${item.guitar2 ? 'Aceito' : 'Marcar Aceite'}">
+                    <span class="check-dot"></span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-guitar"/></svg>
+                </button>
+            </td>
+
+            <!-- STATUS / OK (5/5) -->
+            <td class="col-status">
+                ${gerarBadgeStatus(aceites, temTexto)}
+            </td>
+
+            <!-- AÇÕES -->
+            <td class="col-actions">
+                <button type="button" 
+                        class="btn-row-delete" 
+                        onclick="removerLinha('${item.id}')" 
+                        title="Remover esta música">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </td>
+        `;
+
+                tbody.appendChild(tr);
+            });
+
+            if (visiveis === 0) {
+                const trEmpty = document.createElement("tr");
+                trEmpty.innerHTML = `
+            <td colspan="11" class="empty-state">
+                Nenhuma música encontrada com o filtro selecionado.
+            </td>
+        `;
+                tbody.appendChild(trEmpty);
+            }
+
+            atualizarEstatisticas();
+        }
+
+        function gerarBadgeStatus(aceites, temTexto) {
+            if (aceites === 5) {
+                return `<span class="status-badge approved">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                    OK (5/5)
+                </span>`;
+            }
+            if (aceites === 0 && !temTexto) {
+                return `<span class="status-badge empty">—</span>`;
+            }
+            return `<span class="status-badge pending">${aceites}/5 Aceites</span>`;
+        }
+
+        function atualizarNomeMusica(id, texto) {
+            const item = dados.find(d => d.id === id);
+            if (item) {
+                item.musica = texto;
+                salvarDados();
+                atualizarEstatisticas();
+
+                // Atualiza estilo da linha se mudou
+                const aceites = (item.bateria ? 1 : 0) + (item.baixo ? 1 : 0) + (item.vocal ? 1 : 0) + (item.guitar1 ? 1 : 0) + (item.guitar2 ? 1 : 0);
+                const tr = document.querySelector(`input[oninput*="${id}"]`)?.closest('tr');
+                if (tr) {
+                    const statusCol = tr.querySelector('.col-status');
+                    if (statusCol) {
+                        statusCol.innerHTML = gerarBadgeStatus(aceites, item.musica.trim().length > 0);
+                    }
+                }
+            }
+        }
+
+        function atualizarNomeBanda(id, texto) {
+            const item = dados.find(d => d.id === id);
+            if (item) {
+                item.banda = texto;
+                salvarDados();
+            }
+        }
+
+        function atualizarLinkYoutube(id, link) {
+            const item = dados.find(d => d.id === id);
+            if (item) {
+                item.youtube = link;
+                salvarDados();
+            }
+        }
+
+        function toggleInstrumento(id, instrumento) {
+            const item = dados.find(d => d.id === id);
+            if (item) {
+                item[instrumento] = !item[instrumento];
+                salvarDados();
+                renderizarTabela();
+            }
+        }
+
+        function adicionarLinha(focarNoInput = false) {
+            const novoItem = {
+                id: 'row_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                musica: '',
+                banda: '',
+                youtube: '',
+                bateria: false,
+                baixo: false,
+                vocal: false,
+                guitar1: false,
+                guitar2: false
+            };
+            dados.push(novoItem);
+            salvarDados();
+            renderizarTabela();
+
+            if (focarNoInput) {
+                setTimeout(() => {
+                    const inputs = tbody.querySelectorAll('.music-input');
+                    if (inputs.length > 0) {
+                        const ultimo = inputs[inputs.length - 3]; // Foca no input de música
+                        if (ultimo) {
+                            ultimo.focus();
+                            ultimo.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    }
+                }, 50);
+            }
+        }
+
+        function removerLinha(id) {
+            const item = dados.find(d => d.id === id);
+            if (item && item.musica.trim()) {
+                if (!confirm(`Deseja remover a música "${item.musica}"?`)) return;
+            }
+            dados = dados.filter(d => d.id !== id);
+            if (dados.length === 0) {
+                adicionarLinha();
+            } else {
+                salvarDados();
+                renderizarTabela();
+            }
+        }
+
+        function atualizarEstatisticas() {
+            const totalComNome = dados.filter(d => d.musica.trim().length > 0).length;
+            const aprovadas = dados.filter(d =>
+                (d.bateria ? 1 : 0) + (d.baixo ? 1 : 0) + (d.vocal ? 1 : 0) + (d.guitar1 ? 1 : 0) + (d.guitar2 ? 1 : 0) === 5
+            ).length;
+            const emVotacao = totalComNome - aprovadas;
+            const percent = totalComNome > 0 ? Math.round((aprovadas / totalComNome) * 100) : 0;
+
+            document.getElementById("stat-total").textContent = totalComNome;
+            document.getElementById("stat-approved").textContent = aprovadas;
+            document.getElementById("stat-pending").textContent = Math.max(0, emVotacao);
+            document.getElementById("stat-percent").textContent = percent + '%';
+        }
+
+        function setFiltro(tipo, btn) {
+            filtroAtual = tipo;
+            document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            renderizarTabela();
+        }
+
+        function limparTudo() {
+            if (!confirm("Tem certeza que deseja limpar todas as músicas e votos?")) return;
+            dados = [];
+            for (let i = 0; i < 10; i++) {
+                dados.push({
+                    id: 'row_' + Date.now() + '_' + i,
+                    musica: '',
+                    banda: '',
+                    youtube: '',
+                    bateria: false,
+                    baixo: false,
+                    vocal: false,
+                    guitar1: false,
+                    guitar2: false
+                });
+            }
+            salvarDados();
+            renderizarTabela();
+        }
+
+        function exportarRepertorio() {
+            const aprovadas = dados.filter(d =>
+                (d.bateria ? 1 : 0) + (d.baixo ? 1 : 0) + (d.vocal ? 1 : 0) + (d.guitar1 ? 1 : 0) + (d.guitar2 ? 1 : 0) === 5 &&
+                d.musica.trim().length > 0
+            );
+
+            const textarea = document.getElementById("texto-exportado");
+            if (aprovadas.length === 0) {
+                textarea.value = "Nenhuma música foi aprovada pelos 5 músicos ainda.\nMarque os 5 instrumentos em cada música desejada para que ela apareça aqui.";
+            } else {
+                const linhas = aprovadas.map((d, i) => {
+                    const bandaInfo = d.banda && d.banda.trim() ? ` — ${d.banda.trim()}` : '';
+                    const ytInfo = d.youtube && d.youtube.trim() ? `\n   ▶ Vídeo: ${d.youtube.trim()}` : '';
+                    return `${i + 1}. ${d.musica.trim()}${bandaInfo}${ytInfo}`;
+                });
+                textarea.value = `REPERTÓRIO APROVADO (CONSENSO 5/5):\n\n` + linhas.join('\n\n');
+            }
+
+            document.getElementById("modal-export").classList.add("show");
+        }
+
+        function fecharModal() {
+            document.getElementById("modal-export").classList.remove("show");
+        }
+
+        function copiarTextoExport() {
+            const textarea = document.getElementById("texto-exportado");
+            textarea.select();
+            navigator.clipboard.writeText(textarea.value).then(() => {
+                alert("Lista copiada com sucesso para a área de transferência!");
+            }).catch(() => {
+                document.execCommand('copy');
+                alert("Lista copiada!");
+            });
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Inicializar primeira renderização
+        renderizarTabela();
+    </script>
+</body>
+
+</html>
