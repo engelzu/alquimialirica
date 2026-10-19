@@ -479,6 +479,10 @@
             font-weight: 600;
         }
 
+        .mobile-inst-tag {
+            display: none;
+        }
+
         /* CHECKBOX / TOGGLE ESTILIZADO PARA MÚSICOS */
         .check-cell {
             text-align: center;
@@ -735,32 +739,313 @@
             margin-top: 16px;
         }
 
-        /* RESPONSIVIDADE */
-        @media (max-width: 768px) {
+        /* RESPONSIVIDADE PARA CELULAR E TELAS MENORES */
+        @media (max-width: 820px) {
+            body {
+                padding: 12px 10px;
+            }
+
+            .container {
+                max-width: 100%;
+            }
+
             header {
-                padding: 18px 16px;
+                padding: 18px 14px;
             }
 
             .header-top {
                 flex-direction: column;
-                align-items: flex-start;
+                align-items: stretch;
+                gap: 14px;
+            }
+
+            .brand-title h1 {
+                font-size: 1.35rem;
+            }
+
+            .brand-title {
+                gap: 12px;
+            }
+
+            .brand-icon {
+                width: 42px;
+                height: 42px;
+                font-size: 20px;
             }
 
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+                margin-top: 16px;
+                padding-top: 16px;
+            }
+
+            .stat-card {
+                padding: 10px 12px;
+            }
+
+            .stat-value {
+                font-size: 1.25rem;
             }
 
             .toolbar {
                 flex-direction: column;
                 align-items: stretch;
+                gap: 10px;
             }
 
             .filter-group {
+                display: flex;
+                width: 100%;
                 justify-content: space-between;
             }
 
+            .filter-btn {
+                flex: 1;
+                padding: 8px 4px;
+                font-size: 0.78rem;
+                text-align: center;
+            }
+
             .actions-right {
+                display: flex;
+                width: 100%;
+                gap: 8px;
+            }
+
+            .actions-right .btn {
+                flex: 1;
+                justify-content: center;
+                padding: 10px 8px;
+                font-size: 0.82rem;
+            }
+
+            /* TRANSFORMAÇÃO DA TABELA EM CARDS NO CELULAR */
+            .table-card {
+                background: transparent;
+                border: none;
+                box-shadow: none;
+                overflow: visible;
+            }
+
+            .table-wrap {
+                overflow: visible;
+            }
+
+            table {
+                display: block;
+                min-width: 0 !important;
+                width: 100%;
+            }
+
+            thead {
+                display: none; /* Oculta cabeçalho horizontal de tabela no celular */
+            }
+
+            tbody {
+                display: flex;
+                flex-direction: column;
+                gap: 14px;
+                width: 100%;
+            }
+
+            tbody tr {
+                display: grid;
+                grid-template-columns: repeat(5, 1fr);
+                gap: 10px;
+                padding: 16px 14px;
+                background: var(--bg-card);
+                border: 1px solid var(--border-color);
+                border-radius: var(--radius-lg);
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+                width: 100%;
+            }
+
+            tbody tr.approved-row {
+                border-color: #2ea043;
+                background: linear-gradient(180deg, rgba(35, 134, 54, 0.15) 0%, rgba(22, 27, 34, 0.95) 100%);
+                box-shadow: 0 0 16px rgba(46, 160, 67, 0.35);
+            }
+
+            td {
+                padding: 0;
+                border: none;
+            }
+
+            /* LINHA 1 DO CARD: #, STATUS E EXCLUIR */
+            .col-index {
+                grid-column: 1 / 2;
+                display: flex;
+                align-items: center;
                 justify-content: flex-start;
+                font-size: 1rem;
+                color: #58a6ff;
+                font-weight: 800;
+            }
+
+            .col-index::before {
+                content: "#";
+                font-size: 0.8rem;
+                margin-right: 2px;
+                opacity: 0.7;
+            }
+
+            .col-status {
+                grid-column: 2 / 5;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+            }
+
+            .status-badge {
+                width: 100%;
+                max-width: 180px;
+                padding: 6px 10px;
+                font-size: 0.78rem;
+            }
+
+            .col-actions {
+                grid-column: 5 / 6;
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+                width: 100%;
+            }
+
+            .btn-row-delete {
+                width: 34px;
+                height: 34px;
+                background: rgba(248, 81, 73, 0.1);
+                color: #f85149;
+                border-radius: 8px;
+            }
+
+            /* CAMPOS UM EMBAIXO DO OUTRO NO CELULAR! */
+            .col-music {
+                grid-column: 1 / 6;
+                min-width: 0;
+            }
+
+            .col-music::before {
+                content: "🎵 NOME DA MÚSICA";
+                display: block;
+                font-size: 0.72rem;
+                font-weight: 700;
+                color: var(--text-secondary);
+                letter-spacing: 0.5px;
+                margin-bottom: 5px;
+            }
+
+            .col-band {
+                grid-column: 1 / 6;
+                min-width: 0;
+            }
+
+            .col-band::before {
+                content: "🎸 NOME DA BANDA";
+                display: block;
+                font-size: 0.72rem;
+                font-weight: 700;
+                color: var(--text-secondary);
+                letter-spacing: 0.5px;
+                margin-bottom: 5px;
+            }
+
+            .col-youtube {
+                grid-column: 1 / 6;
+                min-width: 0;
+            }
+
+            .col-youtube::before {
+                content: "▶️ LINK DO YOUTUBE";
+                display: block;
+                font-size: 0.72rem;
+                font-weight: 700;
+                color: #ff6b6b;
+                letter-spacing: 0.5px;
+                margin-bottom: 5px;
+            }
+
+            .music-input {
+                font-size: 1rem;
+                padding: 11px 12px;
+                border-radius: 10px;
+            }
+
+            .youtube-wrap {
+                gap: 8px;
+            }
+
+            .btn-youtube-play {
+                width: 44px;
+                height: 44px;
+                border-radius: 10px;
+            }
+
+            /* ÁREA DOS 5 INSTRUMENTOS NO CELULAR */
+            .cell-drums {
+                grid-column: 1 / 2;
+            }
+            .cell-bass {
+                grid-column: 2 / 3;
+            }
+            .cell-vocal {
+                grid-column: 3 / 4;
+            }
+            .cell-guitar1 {
+                grid-column: 4 / 5;
+            }
+            .cell-guitar2 {
+                grid-column: 5 / 6;
+            }
+
+            .check-cell {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                margin-top: 6px;
+                padding-top: 10px;
+                border-top: 1px dashed rgba(48, 54, 61, 0.6);
+            }
+
+            .toggle-btn {
+                width: 100%;
+                max-width: 60px;
+                height: 54px;
+                border-radius: 10px;
+                flex-direction: column;
+                gap: 4px;
+                padding: 5px 2px;
+            }
+
+            .toggle-btn svg {
+                width: 18px;
+                height: 18px;
+            }
+
+            .mobile-inst-tag {
+                display: block;
+                font-size: 0.58rem;
+                font-weight: 800;
+                letter-spacing: 0.3px;
+                text-transform: uppercase;
+                line-height: 1;
+                white-space: nowrap;
+            }
+
+            .toggle-btn.drums .mobile-inst-tag { color: var(--drum-color); }
+            .toggle-btn.bass .mobile-inst-tag { color: var(--bass-color); }
+            .toggle-btn.vocal .mobile-inst-tag { color: var(--vocal-color); }
+            .toggle-btn.guitar1 .mobile-inst-tag { color: var(--guitar1-color); }
+            .toggle-btn.guitar2 .mobile-inst-tag { color: var(--guitar2-color); }
+
+            .empty-state {
+                display: block;
+                grid-column: 1 / 6;
+                padding: 24px 12px;
             }
         }
     </style>
@@ -1149,57 +1434,62 @@
             </td>
             
             <!-- BATERIA -->
-            <td class="check-cell">
+            <td class="check-cell cell-drums">
                 <button type="button" 
                         class="toggle-btn drums ${item.bateria ? 'active' : ''}" 
                         onclick="toggleInstrumento('${item.id}', 'bateria')"
                         title="Bateria: ${item.bateria ? 'Aceito' : 'Marcar Aceite'}">
                     <span class="check-dot"></span>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-drums"/></svg>
+                    <span class="mobile-inst-tag">BATERIA</span>
                 </button>
             </td>
 
             <!-- BAIXO -->
-            <td class="check-cell">
+            <td class="check-cell cell-bass">
                 <button type="button" 
                         class="toggle-btn bass ${item.baixo ? 'active' : ''}" 
                         onclick="toggleInstrumento('${item.id}', 'baixo')"
                         title="Baixo: ${item.baixo ? 'Aceito' : 'Marcar Aceite'}">
                     <span class="check-dot"></span>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-bass"/></svg>
+                    <span class="mobile-inst-tag">BAIXO</span>
                 </button>
             </td>
 
             <!-- VOCAL -->
-            <td class="check-cell">
+            <td class="check-cell cell-vocal">
                 <button type="button" 
                         class="toggle-btn vocal ${item.vocal ? 'active' : ''}" 
                         onclick="toggleInstrumento('${item.id}', 'vocal')"
                         title="Vocal: ${item.vocal ? 'Aceito' : 'Marcar Aceite'}">
                     <span class="check-dot"></span>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-vocal"/></svg>
+                    <span class="mobile-inst-tag">VOCAL</span>
                 </button>
             </td>
 
             <!-- GUITARRA 1 -->
-            <td class="check-cell">
+            <td class="check-cell cell-guitar1">
                 <button type="button" 
                         class="toggle-btn guitar1 ${item.guitar1 ? 'active' : ''}" 
                         onclick="toggleInstrumento('${item.id}', 'guitar1')"
                         title="Guitarra 1: ${item.guitar1 ? 'Aceito' : 'Marcar Aceite'}">
                     <span class="check-dot"></span>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-guitar"/></svg>
+                    <span class="mobile-inst-tag">GUIT 1</span>
                 </button>
             </td>
 
             <!-- GUITARRA 2 -->
-            <td class="check-cell">
+            <td class="check-cell cell-guitar2">
                 <button type="button" 
                         class="toggle-btn guitar2 ${item.guitar2 ? 'active' : ''}" 
                         onclick="toggleInstrumento('${item.id}', 'guitar2')"
                         title="Guitarra 2: ${item.guitar2 ? 'Aceito' : 'Marcar Aceite'}">
                     <span class="check-dot"></span>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-guitar"/></svg>
+                    <span class="mobile-inst-tag">GUIT 2</span>
                 </button>
             </td>
 
